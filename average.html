@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>평균 점수</title>
+</head>
+<body>
+  <h2>📊 평균 점수 결과</h2>
+  <div id="result"></div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const avg = params.get('avg');
+    const count = params.get('count');
+
+    if (avg && count) {
+      document.getElementById('result').innerText = `총 ${count}명의 평균 점수는 ${avg}점입니다.`;
+    } else {
+      document.getElementById('result').innerText = "데이터가 없습니다.";
+    }
+  </script>
+</body>
+</html>

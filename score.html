@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>구글 시트 쓰기</title>
+</head>
+<body>
+  <h2>학생 점수 입력</h2>
+  <label>이름: <input id="nameInput" /></label><br />
+  <label>점수: <input id="scoreInput" type="number" /></label><br />
+  <button onclick="appendData()">시트에 추가</button>
+  <button onclick="calculateAndRedirect()">평균 점수 페이지로 이동</button>
+
+  <!-- 로그인 버튼 -->
+  <div id="g_id_onload"
+       data-client_id="770761144583-oe5nkacom5mfpjoqq9kb9ml4tshoa9b6.apps.googleusercontent.com"
+       data-context="use"
+       data-ux_mode="popup"
+       data-callback="handleCredentialResponse"
+       data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin"
+       data-type="standard"
+       data-size="large"
+       data-theme="outline"
+       data-text="sign_in_with"
+       data-shape="rectangular"
+       data-logo_alignment="left">
+  </div>
+
+  <!-- GSI 및 Google Sheets API -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+
+  <script>
+    const SPREADSHEET_ID = '1rS5ZsECQ3cMKjyJZVLd3T_SDp0qxbeRRNRFQ3XLHhHY';
+    const RANGE = '시트1!A:B';
+    let accessToken = null;
+
+    function handleCredentialResponse(response) {
+      const id_token = response.credential;
+      gapi.load('client', () => {
+        gapi.client.init({
+          apiKey: 'AIzaSyBurLf_h1R4oq-TPOl_bm5g8o-xB440CrU',
+          discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+        }).then(() => {
+          google.accounts.oauth2.tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: '770761144583-oe5nkacom5mfpjoqq9kb9ml4tshoa9b6.apps.googleusercontent.com',
+            scope: 'https://www.googleapis.com/auth/spreadsheets',
+            callback: (tokenResponse) => {
+              accessToken = tokenResponse.access_token;
+              alert("로그인 성공! 이제 시트를 사용할 수 있습니다.");
+            }
+          });
+          google.accounts.oauth2.tokenClient.requestAccessToken();
+        });
+      });
+    }
+
+    function appendData() {
+      if (!accessToken) {
+        alert("먼저 Google 로그인 후 다시 시도하세요.");
+        return;
+      }
+
+      const name = document.getElementById('nameInput').value;
+      const score = document.getElementById('scoreInput').value;
+      const values = [[name, score]];
+
+      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ values })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert("시트에 추가 완료!");
+      })
+      .catch(err => {
+        console.error(err);
+        alert("오류 발생 😢 콘솔 확인!");
+      });
+    }
+
+    function calculateAndRedirect() {
+      if (!accessToken) {
+        alert("먼저 Google 로그인 후 다시 시도하세요.");
+        return;
+      }
+
+      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const values = data.values || [];
+        let sum = 0;
+        let count = 0;
+
+        values.forEach(row => {
+          const score = parseFloat(row[1]);
+          if (!isNaN(score)) {
+            sum += score;
+            count++;
+          }
+        });
+
+        const avg = (count > 0) ? (sum / count).toFixed(2) : 0;
+
+        // 평균을 쿼리스트링으로 전달
+        window.location.href = `average.html?avg=${avg}&count=${count}`;
+      })
+      .catch(err => {
+        console.error(err);
+        alert("평균 계산 실패 😢");
+      });
+    }
+  </script>
+</body>
+</html>
