@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>개인역량 매트릭스</title>
+  <link rel="stylesheet" href="./css/matrix.css" />
+</head>
+<body>
+  <h1>개인역량 매트릭스</h1>
+
+  <div>
+    학기:
+    <select id="semester">
+      <option value="1-1">1-1</option>
+      <option value="1-2">1-2</option>
+      <option value="2-1">2-1</option>
+      <option value="2-2">2-2</option>
+      <option value="3-1">3-1</option>
+      <option value="3-2">3-2</option>
+    </select>
+    <button onclick="fetchMatrix()">조회</button>
+  </div>
+
+  <table id="matrixTable">
+    <thead>
+      <tr>
+        <th>핵심역량</th>
+        <th>구분</th>
+        <th>프로그래밍</th>
+        <th>성취점수</th>
+      </tr>
+    </thead>
+    <tbody id="matrixBody"></tbody>
+  </table>
+
+  <script src="./js/matrix.js"></script>
+</body>
+</html>
