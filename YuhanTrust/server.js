@@ -3,20 +3,23 @@ const { google } = require('googleapis');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
-const keys = require('./credentials.json');
+require('dotenv').config(); // 환경변수 불러오기
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('public')); // public 폴더에 있는 정적 파일 서빙
+app.use(express.static('public'));
 
-// 🔒 2. 서비스 계정 인증 설정
+// .env의 키로 인증 객체 생성
 const auth = new google.auth.GoogleAuth({
-  credentials: keys,
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    project_id: process.env.GOOGLE_PROJECT_ID,
+  },
   scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
 });
 
-// 📡 3. matrix 요청 처리
 app.post('/api/matrix', async (req, res) => {
   console.log("📥 POST 요청 수신됨");
 
@@ -25,8 +28,6 @@ app.post('/api/matrix', async (req, res) => {
   console.log(`➡️ 선택된 학기: ${semester}`);
 
   const match = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-
-
   if (!match) {
     console.log("❌ 유효하지 않은 시트 URL");
     return res.status(400).json({ success: false, message: '유효하지 않은 시트 URL입니다.' });
@@ -52,8 +53,9 @@ app.post('/api/matrix', async (req, res) => {
   }
 });
 
-// ✅ 4. 서버 실행 로그
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`✅ 서버 실행됨: http://localhost:${PORT}`);
 });
+
+//서버측 (터미널에서 볼 것)
