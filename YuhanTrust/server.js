@@ -39,10 +39,10 @@ app.post('/api/matrix', async (req, res) => {
   try {
     const client = await auth.getClient();
     const sheets = google.sheets({ version: 'v4', auth: client });
-
+    //엑셀 범위(아코디언) 구분 필요
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
-      range: `${semester}!A1:D`,
+      range: `${semester}!A1:D`, 
     });
 
     console.log("✅ 시트 데이터 받아옴");
